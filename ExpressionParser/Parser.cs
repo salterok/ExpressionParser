@@ -40,7 +40,6 @@ namespace ExpressionParser
             ExpressionNode node = new ExpressionNode();
             ExpressionNode root = node;
 
-            var str = GenerateReverseRecord(expression);
             // (a+b)*(c-d)-e
             // (-3*6)+5
             // -4+5/2
@@ -59,44 +58,84 @@ namespace ExpressionParser
             var operations = new Stack<char>();
             var buffer = new List<char>();
 
+            #region nested action
+
+			var action = new Action(
+				() =>
+				{
+					if (buffer.Count == 0)
+					{
+						return;
+					}
+					string source = String.Join(String.Empty, buffer.ToArray());
+					float value;
+					ExpressionNode expr;
+					if (float.TryParse(source, out value))
+					{
+						expr = new ExpressionValue(value);
+					}
+					else if (false)
+					{
+						// check for keyword
+					}
+					else
+					{
+						// [source] is variable name
+						expr = new ExpressionVariable(source);
+					}
+					stack.Push(expr);
+					buffer.Clear();
+				}
+			);
+
+			var createNode = new Action<char>(
+				(c) =>
+				{
+					var tempOperation = GetOperation(c);
+					var _r = stack.Pop();
+					var _l = stack.Pop();
+					var expr = new ExpressionOperation(tempOperation ?? Operation.Unknown, _l, _r);
+					stack.Push(expr);
+				}
+			);
+
+            #endregion
+
 
             foreach (var c in expression)
             {
                 if (c == '(')
                 {
-                    operations.Push(c);
+					action();
+					operations.Push(c);
                 }
                 else if (IsOperation(c))
                 {
-                    if (operations.Count == 0)
+					action();
+					if (operations.Count == 0)
                     {
                         operations.Push(c);
                     }
                     else
                     {
-                        while (operations.Count != 0 && priority.First(item => item.Value.Contains(operations.Peek())).Key >= priority.First(item => item.Value.Contains(c)).Key)
+                        while (operations.Count != 0 && 
+							priority.First(item => item.Value.Contains(operations.Peek())).Key >= 
+							priority.First(item => item.Value.Contains(c)).Key)
                         {
-                            var tempOperation = GetOperation(operations.Pop());
-                            var _r = stack.Pop();
-                            var _l = stack.Pop();
-                            var expr = new ExpressionOperation(tempOperation ?? Operation.Unknown, _l, _r);
-                            stack.Push(expr);
+							createNode(operations.Pop());
                         }
                         operations.Push(c);
                     }
                 }
                 else if (c == ')')
                 {
-                    while (operations.Count > 0)
+					action();
+					while (operations.Count > 0)
                     {
                         char temp = operations.Pop();
                         if (temp != '(')
                         {
-                            var tempOperation = GetOperation(temp);
-                            var _r = stack.Pop();
-                            var _l = stack.Pop();
-                            var expr = new ExpressionOperation(tempOperation ?? Operation.Unknown, _l, _r);
-                            stack.Push(expr);
+							createNode(temp);
                         }
                         else
                         {
@@ -106,85 +145,16 @@ namespace ExpressionParser
                 }
                 else
                 {
-                    var value = new ExpressionValue(float.Parse(c.ToString()));
-                    stack.Push(value);
+                    buffer.Add(c);
                 }
             }
+			action();
             while (operations.Count > 0)
             {
-                var tempOperation = GetOperation(operations.Pop());
-                var _r = stack.Pop();
-                var _l = stack.Pop();
-                var expr = new ExpressionOperation(tempOperation ?? Operation.Unknown, _l, _r);
-                stack.Push(expr);
+				createNode(operations.Pop());
             }
             return stack.Pop();
         }
-
-        #region to delete
-        private static string GenerateReverseRecord(string expression)
-        {
-            var stack = new Stack<char>();
-            var reverseRecord = new List<char>();
-            foreach (var c in expression)
-            {
-                if (stack.Count == 0)
-                {
-                    if (IsOperation(c) || c == '(')
-                    {
-                        stack.Push(c);
-                        //if (reverseRecord.Count == 0 || IsOperation(reverseRecord.Last()))
-                        //{
-                        //    reverseRecord.Add('0');
-                        //}
-                        //reverseRecord.Add(',');
-                        continue;
-                    }
-                }
-                if (IsOperation(c))
-                {
-                    while (stack.Count != 0 && priority.First(item => item.Value.Contains(stack.Peek())).Key >= priority.First(item => item.Value.Contains(c)).Key)
-                    {
-                        reverseRecord.Add(stack.Pop());
-                    }
-                }
-
-                if (c == ')')
-                {
-                    while (stack.Count > 0)
-                    {
-                        char temp = stack.Pop();
-                        if (temp != '(')
-                        {
-                            reverseRecord.Add(temp);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-                else if (operations.Contains(c) || c == '(')
-                {
-                    stack.Push(c);
-                    //if (reverseRecord.Count == 0 || IsOperation(reverseRecord.Last()))
-                    //{
-                    //    reverseRecord.Add('0');
-                    //}
-                    //reverseRecord.Add(',');
-                }
-                else
-                {
-                    reverseRecord.Add(c);
-                }
-            }
-            while (stack.Count > 0)
-            {
-                reverseRecord.Add(stack.Pop());
-            }
-            return String.Join(String.Empty, reverseRecord.ToArray());
-        }
-        #endregion
 
         private static bool IsOperation(char c)
         {
