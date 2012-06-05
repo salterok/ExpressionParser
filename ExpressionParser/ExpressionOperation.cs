@@ -14,7 +14,7 @@ namespace ExpressionParser
         {
             _operation = operation;
         }
-        public override float Value
+        public override double Value
         {
             get
             {

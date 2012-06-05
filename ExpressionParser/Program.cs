@@ -11,7 +11,9 @@ namespace ExpressionParser
 		static void Main(string[] args)
 		{
             var str = Console.ReadLine();
-            var t = Parser.Parse(str);
+			var parser = new Parser();
+			parser.AddExternLib("draft.xml");
+            var t = parser.Parse(str);
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace ExpressionParser
 			_rightNode = _r;
 		}
 
-        public virtual float Value
+        public virtual double Value
         {
             get;
             protected set;

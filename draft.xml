@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Aggregation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:noNamespaceSchemaLocation="draft.xsd"
+ Version="1.0">
+    <Lib Name="Math" Namespace="System.Math">
+        <Methods>
+            <Method Name="Pow" Static="true">
+                <Param Type="float" />
+                <Param Type="float" />
+            </Method>
+            <Method Name="Exp" Static="true">
+                <Param Type="int"/>
+            </Method>
+        </Methods>
+        <Constants>
+            <Constant Name="E" Static="true" />
+            <Constant Name="PI" Static="true" />
+        </Constants>
+    </Lib>
+</Aggregation>

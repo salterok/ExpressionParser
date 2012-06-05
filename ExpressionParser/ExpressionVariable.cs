@@ -15,11 +15,11 @@ namespace ExpressionParser
             Name = name;
         }
 
-        public override float Value
+        public override double Value
         {
             get
             {
-                return base.Value;
+				throw new NotImplementedException();
             }
             protected set
             {

@@ -10,7 +10,8 @@ namespace ExpressionParser
     class Parser
     {
         public static Dictionary<int, char[]> priority = new Dictionary<int, char[]>();
-        static char[] operations;
+        char[] operations;
+		Aggregation aggregation = new Aggregation();
 
         static Parser()
         {
@@ -34,11 +35,25 @@ namespace ExpressionParser
 			});
         }
 
-        public static ExpressionNode Parse(string expression)
+		public void AddExternLib(string filename)
+		{
+			// temporary for testing
+			// TODO: more smart adding new aggregation
+			aggregation.Load(filename);
+		}
+
+        public ExpressionNode Parse(string expression)
         {
             List<char> list = new List<char>();
             ExpressionNode node = new ExpressionNode();
             ExpressionNode root = node;
+
+			var type = Type.GetType("System.Math");
+
+
+			var e = type.InvokeMember("Pow", BindingFlags.InvokeMethod, null, null, new object[] { 2, 3 });
+			var pi = type.InvokeMember("PI", BindingFlags.GetField, null, null, null);
+			
 
             // (a+b)*(c-d)-e
             // (-3*6)+5
@@ -52,16 +67,16 @@ namespace ExpressionParser
             throw new NotImplementedException();
         }
 
-        private static ExpressionNode foo(string expression)
+        private ExpressionNode foo(string expression)
         {
             var stack = new Stack<ExpressionNode>();
             var operations = new Stack<char>();
             var buffer = new List<char>();
 
-            #region nested action
+            #region nested actions
 
-			var action = new Action(
-				() =>
+			var action = new Action<bool>(
+				(state) =>
 				{
 					if (buffer.Count == 0)
 					{
@@ -69,21 +84,44 @@ namespace ExpressionParser
 					}
 					string source = String.Join(String.Empty, buffer.ToArray());
 					float value;
-					ExpressionNode expr;
+					ExpressionNode expr = null;
 					if (float.TryParse(source, out value))
 					{
 						expr = new ExpressionValue(value);
 					}
-					else if (false)
+					else if (state)
 					{
-						// check for keyword
+						// check for aggregate function
+						var method = aggregation.GetMethod(source);
+						if (method.HasValue)
+						{
+							var _params = new List<ExpressionNode>();
+							for (int i = 0; i < method.Value.Params.Length; i++)
+							{
+								_params.Add(stack.Pop());
+							}
+							_params.Reverse();
+							expr = new ExpressionMethod(aggregation, method.Value.Name, method.Value.IsStatic, _params.ToArray());
+						}
 					}
 					else
 					{
-						// [source] is variable name
-						expr = new ExpressionVariable(source);
+						var constant = aggregation.GetConstant(source);
+						if (constant.HasValue)
+						{
+							// [source] is defined constant
+							expr = new ExpressionConstant(aggregation, constant.Value.Name, constant.Value.IsStatic);
+						}
+						else
+						{
+							// [source] is variable name
+							expr = new ExpressionVariable(source);
+						}
 					}
-					stack.Push(expr);
+					if (expr != null)
+					{
+						stack.Push(expr);
+					}
 					buffer.Clear();
 				}
 			);
@@ -106,12 +144,12 @@ namespace ExpressionParser
             {
                 if (c == '(')
                 {
-					action();
+					action(true);
 					operations.Push(c);
                 }
                 else if (IsOperation(c))
                 {
-					action();
+					action(false);
 					if (operations.Count == 0)
                     {
                         operations.Push(c);
@@ -129,7 +167,7 @@ namespace ExpressionParser
                 }
                 else if (c == ')')
                 {
-					action();
+					action(false);
 					while (operations.Count > 0)
                     {
                         char temp = operations.Pop();
@@ -143,12 +181,16 @@ namespace ExpressionParser
                         }
                     }
                 }
-                else
-                {
-                    buffer.Add(c);
-                }
+				else if (c == ',')
+				{
+					action(false);
+				}
+				else
+				{
+					buffer.Add(c);
+				}
             }
-			action();
+			action(false);
             while (operations.Count > 0)
             {
 				createNode(operations.Pop());
@@ -156,7 +198,7 @@ namespace ExpressionParser
             return stack.Pop();
         }
 
-        private static bool IsOperation(char c)
+        private bool IsOperation(char c)
         {
             if (operations == null)
             {
@@ -177,7 +219,7 @@ namespace ExpressionParser
             return operations.Contains(c);
         }
 
-        private static Operation? GetOperation(char c)
+        private Operation? GetOperation(char c)
         {
             Type type = typeof(Operation);
             foreach (var item in type.GetFields())

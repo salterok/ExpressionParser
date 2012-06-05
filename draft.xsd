@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <xs:import namespace="http://www.w3.org/2001/XMLSchema-instance"/>
+    <xs:element name="Aggregation">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="Lib"/>
+            </xs:sequence>
+            <xs:attribute name="Version" use="required" type="xs:decimal"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Lib">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="Methods"/>
+                <xs:element ref="Constants"/>
+            </xs:sequence>
+            <xs:attribute name="Name" use="required" type="xs:NCName"/>
+            <xs:attribute name="Namespace" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Methods">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="Method"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Method">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="Param"/>
+            </xs:sequence>
+            <xs:attribute name="Name" use="required" type="xs:NCName"/>
+            <xs:attribute name="Static" use="required" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Param">
+        <xs:complexType>
+            <xs:attribute name="Type" use="required" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Constants">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="Constant"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Constant">
+        <xs:complexType>
+            <xs:attribute name="Name" use="required" type="xs:NCName"/>
+            <xs:attribute name="Static" use="required" type="xs:boolean"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

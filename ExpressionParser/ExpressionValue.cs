@@ -8,8 +8,6 @@ namespace ExpressionParser
 {
     class ExpressionValue : ExpressionNode
     {
-        private float _value;
-
         public ExpressionValue(float value)
             : base(null, null)
         {
@@ -17,7 +15,7 @@ namespace ExpressionParser
             Value = value;
         }
 
-        public override float Value
+        public override double Value
         {
             get
             {
