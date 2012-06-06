@@ -14,6 +14,11 @@ namespace ExpressionParser
 			var parser = new Parser();
 			parser.AddExternLib("draft.xml");
             var t = parser.Parse(str);
+
+			// 3-6*7-4/(2+5*0.4)
+			Console.Clear();
+			Console.WriteLine("{0} = {1}", str, t.Value);
+			Console.ReadKey();
 		}
 	}
 }

@@ -5,11 +5,11 @@
     <Lib Name="Math" Namespace="System.Math">
         <Methods>
             <Method Name="Pow" Static="true">
-                <Param Type="float" />
-                <Param Type="float" />
+                <Param Type="double" />
+                <Param Type="ddouble" />
             </Method>
-            <Method Name="Exp" Static="true">
-                <Param Type="int"/>
+            <Method Name="Abs" Static="true">
+                <Param Type="double" />
             </Method>
         </Methods>
         <Constants>

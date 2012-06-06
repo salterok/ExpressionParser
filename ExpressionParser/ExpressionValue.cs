@@ -8,7 +8,7 @@ namespace ExpressionParser
 {
     class ExpressionValue : ExpressionNode
     {
-        public ExpressionValue(float value)
+        public ExpressionValue(double value)
             : base(null, null)
         {
             //_value = value;

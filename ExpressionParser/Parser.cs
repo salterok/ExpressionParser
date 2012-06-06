@@ -47,15 +47,6 @@ namespace ExpressionParser
             List<char> list = new List<char>();
             ExpressionNode node = new ExpressionNode();
             ExpressionNode root = node;
-
-			var type = Type.GetType("System.Math");
-
-			string Name = "Pow";
-			var Params = new object[] { 2.0, 3.0 };
-			var ert = (double)type.InvokeMember(Name, BindingFlags.InvokeMethod, null, null, Params);
-
-			var e = type.InvokeMember("Pow", BindingFlags.InvokeMethod, null, null, new object[] { 2, 3 });
-			var pi = type.InvokeMember("PI", BindingFlags.GetField, null, null, null);
 			
 
             // (a+b)*(c-d)-e
@@ -65,9 +56,10 @@ namespace ExpressionParser
 
             // 6+5-(3-4*8)
 
-            var tt = foo(expression);
-            var er = tt.Value;
-            throw new NotImplementedException();
+            var result = foo(expression);
+
+            //throw new NotImplementedException();
+			return result;
         }
 
         private ExpressionNode foo(string expression)
@@ -75,6 +67,7 @@ namespace ExpressionParser
             var stack = new Stack<ExpressionNode>();
             var operations = new Stack<char>();
             var buffer = new List<char>();
+			var methods = new Stack<string>();
 
             #region nested actions
 
@@ -86,9 +79,9 @@ namespace ExpressionParser
 						return;
 					}
 					string source = String.Join(String.Empty, buffer.ToArray());
-					float value;
+					double value;
 					ExpressionNode expr = null;
-					if (float.TryParse(source, out value))
+					if (double.TryParse(source, out value))
 					{
 						expr = new ExpressionValue(value);
 					}
@@ -99,13 +92,6 @@ namespace ExpressionParser
 						if (method.HasValue)
 						{
 							return;
-							//var _params = new List<ExpressionNode>();
-							//for (int i = 0; i < method.Value.Params.Length; i++)
-							//{
-							//	_params.Add(stack.Pop());
-							//}
-							//_params.Reverse();
-							//expr = new ExpressionMethod(aggregation, method.Value.Name, method.Value.IsStatic, _params.ToArray());
 						}
 					}
 					else
@@ -133,13 +119,20 @@ namespace ExpressionParser
 			var createNode = new Action<char>(
 				(c) =>
 				{
-					if (IsOperation(c) || c == '(')
+					ExpressionNode expr = null;
+					if (IsOperation(c))
 					{
-						ExpressionNode expr = null;
-						if (buffer.Count > 0)
+						var tempOperation = GetOperation(c);
+						var _r = stack.Pop();
+						var _l = stack.Pop();
+						expr = new ExpressionOperation(tempOperation ?? Operation.Unknown, _l, _r);
+					}
+					else if (c == '(')
+					{
+						if (methods.Count > 0)
 						{
-							buffer.Reverse();
-							var method = aggregation.GetMethod(String.Join(String.Empty, buffer));
+							var m_name = methods.Pop();
+							var method = aggregation.GetMethod(m_name);
 							if (method.HasValue)
 							{
 								var _params = new List<ExpressionNode>();
@@ -148,25 +141,15 @@ namespace ExpressionParser
 									_params.Add(stack.Pop());
 								}
 								_params.Reverse();
-								expr = new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic, _params.ToArray());
+								expr = new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic, 
+									_params.ToArray());
 							}
-							buffer.Clear();
 						}
-						else if (c != '(')
-						{
-							var tempOperation = GetOperation(c);
-							var _r = stack.Pop();
-							var _l = stack.Pop();
-							expr = new ExpressionOperation(tempOperation ?? Operation.Unknown, _l, _r);
-						}
-						if (expr != null)
-						{
-							stack.Push(expr);
-						}
+
 					}
-					else
+					if (expr != null)
 					{
-						buffer.Add(c);
+						stack.Push(expr);
 					}
 				}
 			);
@@ -181,9 +164,9 @@ namespace ExpressionParser
 					action(true);
 					//
 					operations.Push(c);
-					foreach (var _c in String.Join(String.Empty, buffer.ToArray()))
+					if (buffer.Count > 0)
 					{
-						operations.Push(_c);
+						methods.Push(String.Join(String.Empty, buffer.ToArray()));
 					}
 					buffer.Clear();
                 }

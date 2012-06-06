@@ -29,7 +29,7 @@ namespace ExpressionParser
                     case Operation.Divide:
                         return _leftNode.Value / _rightNode.Value;
                     default:
-                        return float.NaN;
+                        return double.NaN;
                 }
             }
             protected set
