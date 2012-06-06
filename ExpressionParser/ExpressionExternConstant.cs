@@ -7,9 +7,9 @@ using System.Reflection;
 
 namespace ExpressionParser
 {
-	class ExpressionConstant : ExpressionExternMember
+	class ExpressionExternConstant : ExpressionExternMember
 	{
-		public ExpressionConstant(Aggregation _aggr, string name, bool isConstant)
+		public ExpressionExternConstant(Aggregation _aggr, string name, bool isConstant)
 			: base(_aggr, name, isConstant)
 		{
 
