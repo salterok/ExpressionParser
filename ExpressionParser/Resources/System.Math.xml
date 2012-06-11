@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Aggregation Version="1.0">
+    <Lib Name="Math" Type="System.Math">
+        <Methods>
+            <Method Name="Pow" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Abs" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Acos" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Asin" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Atan" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Atan2" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Ceiling" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Ceiling" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Cos" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Cosh" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Floor" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Log10" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Log" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="IEEERemainder" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Max" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Min" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Round" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Round" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                    <Param Type="int" />
+                </Signature>
+            </Method>
+            <Method Name="Sign" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Sin" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Sinh" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Sign" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Sqrt" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Tan" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Tanh" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+            <Method Name="Truncate" Static="true">
+                <Signature>
+                    <Param Type="double" />
+                </Signature>
+            </Method>
+        </Methods>
+        <Constants>
+            <Constant Name="E" />
+            <Constant Name="PI" />
+        </Constants>
+    </Lib>
+</Aggregation>

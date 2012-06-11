@@ -48,17 +48,8 @@ namespace ExpressionParser
 			{
 				var count = Value.Length + 1;
 				var temp = Value;
-				Value += c;
-				if (Type == OType.Value)
-				{
-					// if Value become a number
-					return true;
-				}
-				else
-				{
-					Value = temp;
-					temp += c;
-				}
+				Value = temp;
+				temp += c;
 				var matches = operationList.Where(item => item.Length >= count).Count(item => item.Substring(0, count) == temp);
 				if (matches > 0)
 				{

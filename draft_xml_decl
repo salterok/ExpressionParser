@@ -1,6 +1,0 @@
-Aggregation=> (Version = [String as "*.*"])
-	Lib=> (Name = [String], Namespace = [String as "((\w)+\.)*(\w)+"])
-		Method=> (Name = [String], Static = [bool])
-			Param (Type = [typeof() => String], Required = [bool])
-		...
-		

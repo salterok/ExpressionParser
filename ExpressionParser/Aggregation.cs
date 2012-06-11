@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Schema;
 using System.Xml.Linq;
+using System.IO;
 
 namespace ExpressionParser
 {
@@ -16,17 +18,16 @@ namespace ExpressionParser
 			{
 				public string Name;
 				public bool IsStatic;
-				public string[] Params;
+				public IEnumerable<string[]> Params;
 
 				public bool IsMatchArgs(int count)
 				{
-					return Params.Length == count;
+					return Params.Select(args => args.Length).Contains(count);
 				}
 			}
 			public struct Constant
 			{
 				public string Name;
-				public bool IsStatic;
 			}
 			#endregion
 
@@ -62,11 +63,31 @@ namespace ExpressionParser
 		public Lib[] Libs { get; private set; }
 		public string Version { get; private set; }
 
-		public void Load(string filename)
+		public bool Load(string filename)
 		{
 			var doc = XDocument.Load(filename);
 			
 			// TODO: add xsd schema validation
+
+			XmlSchemaSet schemas = new XmlSchemaSet();
+			schemas.Add(XmlSchema.Read(new MemoryStream(
+				Encoding.UTF8.GetBytes(Properties.Resources.ExternResourceDefinitionLibrarySchema)),
+				(o, e) =>
+				{
+					throw new Exception(e.Message);
+				}));
+
+			bool errors = false;
+			doc.Validate(schemas, (o, e) =>
+			{
+				errors = true;
+			});
+			if (errors)
+			{
+				return false;
+			}
+
+
 
 			Version = doc.Root.Attribute("Version").Value;
 			var libNames = doc.Root.Elements("Lib");
@@ -85,21 +106,22 @@ namespace ExpressionParser
 								   IsStatic = bool.Parse(method.Attribute("Static").Value),
 								   Params = (
 									   from item
-									   in method.Elements("Param")
-									   select item.Attribute("Type").Value
-									   ).ToArray()
+									   in method.Elements("Signature")
+									   select item.Elements("Param").Select(arg => arg.Attribute("Type").Value).ToArray()
+									   )
 							   }).ToArray(),
 					Constants = (from constant
 								in libName.Element("Constants").Elements("Constant")
 								 select new Lib.Constant()
 								 {
-									 Name = constant.Attribute("Name").Value,
-									 IsStatic = bool.Parse(constant.Attribute("Static").Value)
+									 Name = constant.Attribute("Name").Value
 								 }).ToArray()
 				};
 				libs.Add(lib);
 			}
 			Libs = libs.ToArray();
+
+			return true;
 		}
 
 		public Lib.Method? GetMethod(string methodName)

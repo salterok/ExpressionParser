@@ -129,7 +129,7 @@ namespace ExpressionParser
 									throw new InvalidOperationException("no signature match for passed arguments");
 								}
 								var _params = new List<ExpressionNode>();
-								for (int i = 0; i < method.Value.Params.Length; i++)
+								for (int i = 0; i < argsCount; i++)
 								{
 									_params.Add(stack.Pop());
 								}

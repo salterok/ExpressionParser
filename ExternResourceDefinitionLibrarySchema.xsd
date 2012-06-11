@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <xs:import namespace="http://www.w3.org/2001/XMLSchema-instance"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
     <xs:element name="Aggregation">
         <xs:complexType>
             <xs:sequence>
@@ -16,7 +15,7 @@
                 <xs:element ref="Constants"/>
             </xs:sequence>
             <xs:attribute name="Name" use="required" type="xs:NCName"/>
-            <xs:attribute name="Namespace" use="required" type="xs:NCName"/>
+            <xs:attribute name="Type" use="required" type="xs:NCName"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="Methods">
@@ -29,15 +28,22 @@
     <xs:element name="Method">
         <xs:complexType>
             <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="Param"/>
+                <xs:element ref="Signature"/>
             </xs:sequence>
             <xs:attribute name="Name" use="required" type="xs:NCName"/>
             <xs:attribute name="Static" use="required" type="xs:boolean"/>
         </xs:complexType>
     </xs:element>
+    <xs:element name="Signature">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="Param"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="Param">
         <xs:complexType>
-            <xs:attribute name="Type" use="required" type="xs:NCName"/>
+            <xs:attribute name="Type" use="required" type="CLRBaseType"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="Constants">
@@ -50,7 +56,14 @@
     <xs:element name="Constant">
         <xs:complexType>
             <xs:attribute name="Name" use="required" type="xs:NCName"/>
-            <xs:attribute name="Static" use="required" type="xs:boolean"/>
         </xs:complexType>
     </xs:element>
+    <xs:simpleType name="CLRBaseType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="float"/>
+            <xs:enumeration value="double"/>
+            <xs:enumeration value="int"/>
+            <xs:enumeration value="string"/>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>

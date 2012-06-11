@@ -13,7 +13,7 @@ namespace ExpressionParser
 		{			
 			var str = Console.ReadLine();
 			var parser = new Parser();
-			parser.AddExternLib("draft.xml");
+			parser.AddExternLib("System.Math.xml");
             var t = parser.Parse(str);
 
 			// 3-6*7-4/(2+5*0.4)
