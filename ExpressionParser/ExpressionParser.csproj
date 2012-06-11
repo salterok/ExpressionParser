@@ -58,6 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregation.cs" />
+    <Compile Include="AttributesWorker.cs" />
+    <Compile Include="CompleteOperation.cs" />
     <Compile Include="Expression.cs" />
     <Compile Include="ExpressionExternConstant.cs" />
     <Compile Include="ExpressionExternMember.cs" />
@@ -67,7 +69,10 @@
     <Compile Include="ExpressionOperation.cs" />
     <Compile Include="ExpressionVariable.cs" />
     <Compile Include="Operation.cs" />
+    <Compile Include="OperationTypeAttribute.cs" />
+    <Compile Include="OType.cs" />
     <Compile Include="Parser.cs" />
+    <Compile Include="PriorityAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ExpressionValue.cs" />
