@@ -66,117 +66,244 @@ namespace ExpressionParser
 		private void ExecuteAtomicOperation(ref Stack<ExpressionNode> stack, ref Stack<CompleteOperation> operations,
 			CompleteOperation current, CompleteOperation previous)
 		{
-			if (current.OriginalOperation == Operation.OpenBracket)
-			{
-				if (operations.Count > 0 && operations.Peek().Type == OType.Method)
-				{
-					var temp = operations.Pop();
-					operations.Push(current);
-					operations.Push(temp);
-				}
-				else
-				{
-					operations.Push(current);
-				}
-			}
-			else if (current.Type == OType.Arithmetic)
-			{
-				if (previous == null || previous.Type != OType.Value && previous.Type != OType.Method)
-				{
-					// WATCH: previous.Type != OType.Method used for handle external constant
-					// HACK: need to change later
+			#region prev
+			//if (current.OriginalOperation == Operation.OpenBracket)
+			//{
+			//	if (operations.Count > 0 && operations.Peek().Type == OType.Method)
+			//	{
+			//		var temp = operations.Pop();
+			//		operations.Push(current);
+			//		operations.Push(temp);
+			//	}
+			//	else
+			//	{
+			//		operations.Push(current);
+			//	}
+			//}
+			//else if (current.Type == OType.Arithmetic)
+			//{
+			//	if (previous == null || previous.Type != OType.Value && previous.Type != OType.Method)
+			//	{
+			//		// WATCH: previous.Type != OType.Method used for handle external constant
+			//		// HACK: need to change later
 
-					// if leading sign
-					if (current.OriginalOperation == Operation.Addition || current.OriginalOperation == Operation.Substraction)
-					{
-						stack.Push(new ExpressionValue(0));
-					}
+			//		// if leading sign
+			//		if (current.OriginalOperation == Operation.Addition || current.OriginalOperation == Operation.Substraction)
+			//		{
+			//			stack.Push(new ExpressionValue(0));
+			//		}
 
-				}
-				if (operations.Count == 0)
-				{
-					operations.Push(current);
-				}
-				else
-				{
-					while (operations.Count > 0 && operations.Peek().Priority >= current.Priority)
-					{
-						CreateNode(ref stack, operations.Pop().OriginalOperation);
-					}
-					operations.Push(current);
-				}
-			}
-			else if (current.OriginalOperation == Operation.CloseBracket)
+			//	}
+			//	if (operations.Count == 0)
+			//	{
+			//		operations.Push(current);
+			//	}
+			//	else
+			//	{
+			//		while (operations.Count > 0 && operations.Peek().Priority >= current.Priority)
+			//		{
+			//			CreateNode(ref stack, operations.Pop().OriginalOperation);
+			//		}
+			//		operations.Push(current);
+			//	}
+			//}
+			//else if (current.OriginalOperation == Operation.CloseBracket)
+			//{
+			//	int argsCount = 0;
+			//	while (operations.Count > 0)
+			//	{
+			//		var temp = operations.Pop();
+
+			//		if (temp.Type == OType.Arithmetic)
+			//		{
+			//			CreateNode(ref stack, temp.OriginalOperation);
+			//		}
+			//		else if (temp.Type == OType.Method)
+			//		{
+			//			if (stack.Count >= argsCount)
+			//			{
+			//				var method = aggregation.GetMethod(temp.Value);
+			//				if (method.HasValue)
+			//				{
+			//					if (!method.Value.IsMatchArgs(++argsCount))
+			//					{
+			//						throw new InvalidOperationException("no signature match for passed arguments");
+			//					}
+			//					var _params = new List<ExpressionNode>();
+			//					for (int i = 0; i < argsCount; i++)
+			//					{
+			//						_params.Add(stack.Pop());
+			//					}
+			//					_params.Reverse();
+			//					stack.Push(new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic,
+			//						_params.ToArray()));
+			//				}
+			//			}
+			//			else
+			//			{
+			//				throw new Exception("exception");
+			//			}
+			//		}
+			//		else if (temp.Type == OType.Separator)
+			//		{
+			//			argsCount++;
+			//		}
+
+			//		if (temp.OriginalOperation == Operation.OpenBracket)
+			//			break;
+
+			//	}
+			//}
+			//else if (current.Type == OType.Method)
+			//{
+			//	Aggregation.Lib.Constant? constant = null;
+			//	if ((constant = aggregation.GetConstant(current.Value)) != null)
+			//	{
+			//		stack.Push(new ExpressionExternConstant(aggregation, current.Value));
+			//	}
+			//	else
+			//	{
+			//		operations.Push(current);
+			//	}
+			//}
+			//else if (current.OriginalOperation == Operation.Comma)
+			//{
+			//	while (operations.Peek().Type != OType.Method && operations.Peek().Type != OType.Separator)
+			//	{
+			//		CreateNode(ref stack, operations.Pop().OriginalOperation);
+			//	}
+			//	operations.Push(new CompleteOperation(','));
+			//}
+			//else if (current.Type == OType.Value)
+			//{
+			//	stack.Push(new ExpressionValue(double.Parse(current.Value)));
+			//}
+			#endregion
+
+
+			OType type = current.Type;
+			switch (type)
 			{
-				int argsCount = 0;
-				while (operations.Count > 0)
-				{
-					var temp = operations.Pop();
-
-					if (temp.Type == OType.Arithmetic)
+				case OType.Arithmetic:
 					{
-						CreateNode(ref stack, temp.OriginalOperation);
-					}
-					else if (temp.Type == OType.Method)
-					{
-						if (stack.Count >= argsCount)
+						if (previous == null || previous.Type != OType.Value && previous.Type != OType.Method)
 						{
-							var method = aggregation.GetMethod(temp.Value);
-							if (method.HasValue)
+							// WATCH: previous.Type != OType.Method used for handle external constant
+							// HACK: need to change later
+
+							// if leading sign
+							if (current.OriginalOperation == Operation.Addition || current.OriginalOperation == Operation.Substraction)
 							{
-								if (!method.Value.IsMatchArgs(++argsCount))
-								{
-									throw new InvalidOperationException("no signature match for passed arguments");
-								}
-								var _params = new List<ExpressionNode>();
-								for (int i = 0; i < argsCount; i++)
-								{
-									_params.Add(stack.Pop());
-								}
-								_params.Reverse();
-								stack.Push(new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic,
-									_params.ToArray()));
+								stack.Push(new ExpressionValue(0));
 							}
+
+						}
+						if (operations.Count == 0)
+						{
+							operations.Push(current);
 						}
 						else
 						{
-							throw new Exception("exception");
+							while (operations.Count > 0 && operations.Peek().Priority >= current.Priority)
+							{
+								CreateNode(ref stack, operations.Pop().OriginalOperation);
+							}
+							operations.Push(current);
 						}
 					}
-					else if (temp.Type == OType.Separator)
+					break;
+				case OType.Separator:
 					{
-						argsCount++;
+						if (current.OriginalOperation == Operation.OpenBracket)
+						{
+							if (operations.Count > 0 && operations.Peek().Type == OType.Method)
+							{
+								var temp = operations.Pop();
+								operations.Push(current);
+								operations.Push(temp);
+							}
+							else
+							{
+								operations.Push(current);
+							}
+						}
+						else if (current.OriginalOperation == Operation.CloseBracket)
+						{
+							int argsCount = 0;
+							while (operations.Count > 0)
+							{
+								var temp = operations.Pop();
+
+								if (temp.Type == OType.Arithmetic)
+								{
+									CreateNode(ref stack, temp.OriginalOperation);
+								}
+								else if (temp.Type == OType.Method)
+								{
+									if (stack.Count >= argsCount)
+									{
+										var method = aggregation.GetMethod(temp.Value);
+										if (method.HasValue)
+										{
+											if (!method.Value.IsMatchArgs(++argsCount))
+											{
+												throw new InvalidOperationException("no signature match for passed arguments");
+											}
+											var _params = new List<ExpressionNode>();
+											for (int i = 0; i < argsCount; i++)
+											{
+												_params.Add(stack.Pop());
+											}
+											_params.Reverse();
+											stack.Push(new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic,
+												_params.ToArray()));
+										}
+									}
+									else
+									{
+										throw new Exception("exception");
+									}
+								}
+								else if (temp.Type == OType.Separator)
+								{
+									argsCount++;
+								}
+
+								if (temp.OriginalOperation == Operation.OpenBracket)
+									break;
+
+							}
+						}
+						else if (current.OriginalOperation == Operation.Comma)
+						{
+							while (operations.Peek().Type != OType.Method && operations.Peek().Type != OType.Separator)
+							{
+								CreateNode(ref stack, operations.Pop().OriginalOperation);
+							}
+							operations.Push(new CompleteOperation(','));
+						}
 					}
+					break;
+				case OType.Value:
+					{
+						stack.Push(new ExpressionValue(double.Parse(current.Value)));
+					}
+					break;
+				case OType.Method:
+					{
+						Aggregation.Lib.Constant? constant = null;
+						if ((constant = aggregation.GetConstant(current.Value)) != null)
+						{
+							stack.Push(new ExpressionExternConstant(aggregation, current.Value));
+						}
+						else
+						{
+							operations.Push(current);
+						}
+					}
+					break;
+			}
 
-					if (temp.OriginalOperation == Operation.OpenBracket)
-						break;
-
-				}
-			}
-			else if (current.Type == OType.Method)
-			{
-				Aggregation.Lib.Constant? constant = null;
-				if ((constant = aggregation.GetConstant(current.Value)) != null)
-				{
-					stack.Push(new ExpressionExternConstant(aggregation, current.Value));
-				}
-				else
-				{
-					operations.Push(current);
-				}
-			}
-			else if (current.OriginalOperation == Operation.Comma)
-			{
-				while (operations.Peek().Type != OType.Method && operations.Peek().Type != OType.Separator)
-				{
-					CreateNode(ref stack, operations.Pop().OriginalOperation);
-				}
-				operations.Push(new CompleteOperation(','));
-			}
-			else if (current.Type == OType.Value)
-			{
-				stack.Push(new ExpressionValue(double.Parse(current.Value)));
-			}
 		}
 
 		private ExpressionNode foo(string expression)

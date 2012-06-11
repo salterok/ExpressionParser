@@ -11,9 +11,10 @@ namespace ExpressionParser
 	{
 		static void Main(string[] args)
 		{			
-			var str = Console.ReadLine();
 			var parser = new Parser();
 			parser.AddExternLib("System.Math.xml");
+
+			var str = Console.ReadLine();
             var t = parser.Parse(str);
 
 			// 3-6*7-4/(2+5*0.4)

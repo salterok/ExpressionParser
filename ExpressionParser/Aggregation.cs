@@ -97,7 +97,7 @@ namespace ExpressionParser
 				var lib = new Lib()
 				{
 					Name = libName.Attribute("Name").Value,
-					Namespace = libName.Attribute("Namespace").Value,
+					Namespace = libName.Attribute("Type").Value,
 					Methods = (from method
 							  in libName.Element("Methods").Elements("Method")
 							   select new Lib.Method()
