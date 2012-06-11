@@ -9,8 +9,8 @@ namespace ExpressionParser
 {
 	class ExpressionExternConstant : ExpressionExternMember
 	{
-		public ExpressionExternConstant(Aggregation _aggr, string name, bool isConstant)
-			: base(_aggr, name, isConstant)
+		public ExpressionExternConstant(Aggregation _aggr, string name)
+			: base(_aggr, name, true)
 		{
 
 		}

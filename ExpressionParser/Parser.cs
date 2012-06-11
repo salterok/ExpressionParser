@@ -68,11 +68,15 @@ namespace ExpressionParser
 		{
 			if (current.OriginalOperation == Operation.OpenBracket)
 			{
-				if (operations.Peek().Type == OType.Method)
+				if (operations.Count > 0 && operations.Peek().Type == OType.Method)
 				{
 					var temp = operations.Pop();
 					operations.Push(current);
 					operations.Push(temp);
+				}
+				else
+				{
+					operations.Push(current);
 				}
 			}
 			else if (current.Type == OType.Arithmetic)
@@ -104,10 +108,10 @@ namespace ExpressionParser
 			}
 			else if (current.OriginalOperation == Operation.CloseBracket)
 			{
+				int argsCount = 0;
 				while (operations.Count > 0)
 				{
 					var temp = operations.Pop();
-					int argsCount = 0;
 
 					if (temp.Type == OType.Arithmetic)
 					{
@@ -117,11 +121,13 @@ namespace ExpressionParser
 					{
 						if (stack.Count >= argsCount)
 						{
-							var t = stack.Take(argsCount);
-
 							var method = aggregation.GetMethod(temp.Value);
 							if (method.HasValue)
 							{
+								if (!method.Value.IsMatchArgs(++argsCount))
+								{
+									throw new InvalidOperationException("no signature match for passed arguments");
+								}
 								var _params = new List<ExpressionNode>();
 								for (int i = 0; i < method.Value.Params.Length; i++)
 								{
@@ -142,14 +148,22 @@ namespace ExpressionParser
 						argsCount++;
 					}
 
-					if (temp.OriginalOperation == Operation.CloseBracket)
+					if (temp.OriginalOperation == Operation.OpenBracket)
 						break;
 
 				}
 			}
 			else if (current.Type == OType.Method)
 			{
-				operations.Push(current);
+				Aggregation.Lib.Constant? constant = null;
+				if ((constant = aggregation.GetConstant(current.Value)) != null)
+				{
+					stack.Push(new ExpressionExternConstant(aggregation, current.Value));
+				}
+				else
+				{
+					operations.Push(current);
+				}
 			}
 			else if (current.OriginalOperation == Operation.Comma)
 			{

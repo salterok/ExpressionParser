@@ -17,6 +17,11 @@ namespace ExpressionParser
 				public string Name;
 				public bool IsStatic;
 				public string[] Params;
+
+				public bool IsMatchArgs(int count)
+				{
+					return Params.Length == count;
+				}
 			}
 			public struct Constant
 			{
