@@ -63,153 +63,138 @@ namespace ExpressionParser
 			return result;
 		}
 
+		private void ExecuteAtomicOperation(ref Stack<ExpressionNode> stack, ref Stack<CompleteOperation> operations,
+			CompleteOperation current, CompleteOperation previous)
+		{
+			if (current.OriginalOperation == Operation.OpenBracket)
+			{
+				if (operations.Peek().Type == OType.Method)
+				{
+					var temp = operations.Pop();
+					operations.Push(current);
+					operations.Push(temp);
+				}
+			}
+			else if (current.Type == OType.Arithmetic)
+			{
+				if (previous == null || previous.Type != OType.Value && previous.Type != OType.Method)
+				{
+					// WATCH: previous.Type != OType.Method used for handle external constant
+					// HACK: need to change later
+
+					// if leading sign
+					if (current.OriginalOperation == Operation.Addition || current.OriginalOperation == Operation.Substraction)
+					{
+						stack.Push(new ExpressionValue(0));
+					}
+
+				}
+				if (operations.Count == 0)
+				{
+					operations.Push(current);
+				}
+				else
+				{
+					while (operations.Count > 0 && operations.Peek().Priority >= current.Priority)
+					{
+						CreateNode(ref stack, operations.Pop().OriginalOperation);
+					}
+					operations.Push(current);
+				}
+			}
+			else if (current.OriginalOperation == Operation.CloseBracket)
+			{
+				while (operations.Count > 0)
+				{
+					var temp = operations.Pop();
+					int argsCount = 0;
+
+					if (temp.Type == OType.Arithmetic)
+					{
+						CreateNode(ref stack, temp.OriginalOperation);
+					}
+					else if (temp.Type == OType.Method)
+					{
+						if (stack.Count >= argsCount)
+						{
+							var t = stack.Take(argsCount);
+
+							var method = aggregation.GetMethod(temp.Value);
+							if (method.HasValue)
+							{
+								var _params = new List<ExpressionNode>();
+								for (int i = 0; i < method.Value.Params.Length; i++)
+								{
+									_params.Add(stack.Pop());
+								}
+								_params.Reverse();
+								stack.Push(new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic,
+									_params.ToArray()));
+							}
+						}
+						else
+						{
+							throw new Exception("exception");
+						}
+					}
+					else if (temp.Type == OType.Separator)
+					{
+						argsCount++;
+					}
+
+					if (temp.OriginalOperation == Operation.CloseBracket)
+						break;
+
+				}
+			}
+			else if (current.Type == OType.Method)
+			{
+				operations.Push(current);
+			}
+			else if (current.OriginalOperation == Operation.Comma)
+			{
+				while (operations.Peek().Type != OType.Method && operations.Peek().Type != OType.Separator)
+				{
+					CreateNode(ref stack, operations.Pop().OriginalOperation);
+				}
+				operations.Push(new CompleteOperation(','));
+			}
+			else if (current.Type == OType.Value)
+			{
+				stack.Push(new ExpressionValue(double.Parse(current.Value)));
+			}
+		}
+
 		private ExpressionNode foo(string expression)
 		{
 			var stack = new Stack<ExpressionNode>();
 			var operations = new Stack<CompleteOperation>();
-			var buffer = new List<char>();
 
-			#region nested actions
-
-			var action = new Action<bool>(
-				(state) =>
-				{
-					if (buffer.Count == 0)
-					{
-						return;
-					}
-					string source = String.Join(String.Empty, buffer.ToArray());
-					double value;
-					ExpressionNode expr = null;
-					if (double.TryParse(source, out value))
-					{
-						expr = new ExpressionValue(value);
-					}
-					else if (state)
-					{
-						// check for aggregate function
-						var method = aggregation.GetMethod(source);
-						if (method.HasValue)
-						{
-							return;
-						}
-					}
-					else
-					{
-						var constant = aggregation.GetConstant(source);
-						if (constant.HasValue)
-						{
-							// [source] is defined constant
-							expr = new ExpressionExternConstant(aggregation, constant.Value.Name, constant.Value.IsStatic);
-						}
-						else
-						{
-							// [source] is variable name
-							expr = new ExpressionVariable(source);
-						}
-					}
-					if (expr != null)
-					{
-						stack.Push(expr);
-					}
-					buffer.Clear();
-				}
-			);
-			#endregion
+			CompleteOperation current = null;
+			CompleteOperation previous = null;
 
 			foreach (var c in expression)
 			{
-				var current = new CompleteOperation(c);
-				if (current.OriginalOperation == Operation.OpenBracket)
+				if (current == null)
 				{
-					action(true);
-					operations.Push(current);
-					if (buffer.Count > 0)
-					{
-						operations.Push(new CompleteOperation(String.Join(String.Empty, buffer.ToArray())));
-					}
-					buffer.Clear();
-				}
-				else if (current.Type == OType.Arithmetic)
-				{
-					action(false);
-					if (operations.Count == 0)
-					{
-						operations.Push(new CompleteOperation(c));
-					}
-					else
-					{
-						var operation = new CompleteOperation(c);
-						while (operations.Count > 0 && operations.Peek().Priority >= operation.Priority)
-						{
-							CreateNode(ref stack, operations.Pop().OriginalOperation);
-						}
-						operations.Push(operation);
-					}
-				}
-				else if (current.OriginalOperation == Operation.CloseBracket)
-				{
-					action(false);
-					while (operations.Count > 0)
-					{
-						var temp = operations.Pop();
-						int argsCount = 0;
-
-						if (temp.Type == OType.Arithmetic)
-						{
-							CreateNode(ref stack, temp.OriginalOperation);
-						}
-						else if (temp.Type == OType.Method)
-						{
-							if (stack.Count >= argsCount)
-							{
-								var t = stack.Take(argsCount);
-
-								var method = aggregation.GetMethod(temp.Value);
-								if (method.HasValue)
-								{
-									var _params = new List<ExpressionNode>();
-									for (int i = 0; i < method.Value.Params.Length; i++)
-									{
-										_params.Add(stack.Pop());
-									}
-									_params.Reverse();
-									stack.Push(new ExpressionExternMethod(aggregation, method.Value.Name, method.Value.IsStatic,
-										_params.ToArray()));
-								}
-
-							}
-							else
-							{
-								throw new Exception("exception");
-							}
-						}
-						else if (temp.Type == OType.Separator)
-						{
-							argsCount++;
-						}
-
-
-						if (temp.OriginalOperation == Operation.CloseBracket)
-							break;
-
-					}
-				}
-				else if (current.OriginalOperation == Operation.Comma)
-				{
-					action(false);
-					while (operations.Peek().Type != OType.Method && operations.Peek().Type != OType.Separator)
-					{
-						CreateNode(ref stack, operations.Pop().OriginalOperation);
-					}
-					operations.Push(new CompleteOperation(','));
+					current = new CompleteOperation(c);
 				}
 				else
 				{
-					buffer.Add(c);
+					if (current.TryAdd(c))
+					{
+						continue;
+					}
+					else
+					{
+						ExecuteAtomicOperation(ref stack, ref operations, current, previous);
+						previous = current;
+						current = new CompleteOperation(c);
+					}
 				}
 			}
-			action(false);
+
+			ExecuteAtomicOperation(ref stack, ref operations, current, previous);
 			while (operations.Count > 0)
 			{
 				CreateNode(ref stack, operations.Pop().OriginalOperation);
