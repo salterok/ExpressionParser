@@ -66,9 +66,8 @@ namespace ExpressionParser
 		public bool Load(string filename)
 		{
 			var doc = XDocument.Load(filename);
-			
-			// TODO: add xsd schema validation
 
+			#region xml validation
 			XmlSchemaSet schemas = new XmlSchemaSet();
 			schemas.Add(XmlSchema.Read(new MemoryStream(
 				Encoding.UTF8.GetBytes(Properties.Resources.ExternResourceDefinitionLibrarySchema)),
@@ -86,9 +85,9 @@ namespace ExpressionParser
 			{
 				return false;
 			}
+			#endregion
 
-
-
+			#region reading xml
 			Version = doc.Root.Attribute("Version").Value;
 			var libNames = doc.Root.Elements("Lib");
 			var libs = new List<Lib>();
@@ -120,6 +119,7 @@ namespace ExpressionParser
 				libs.Add(lib);
 			}
 			Libs = libs.ToArray();
+			#endregion
 
 			return true;
 		}

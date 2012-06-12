@@ -32,8 +32,6 @@ namespace ExpressionParser
 				}
 				try
 				{
-					// HACK, WATCH: no use for IsStatic
-					// does it need at all?
 					Type type = Type.GetType(result.First().type);
 					return (double)type.InvokeMember(result.First().member, BindingFlags.GetField, null, null, null);
 				}

@@ -17,7 +17,6 @@ namespace ExpressionParser
 
 		static CompleteOperation()
 		{
-			// TODO: fill operationList
 			operationList = new List<string>();
 			Type type = typeof(Operation);
 			foreach (var name in Enum.GetNames(type))
@@ -29,7 +28,6 @@ namespace ExpressionParser
 					operationList.Add((attributes.First() as DescriptionAttribute).Description);
 				}
 			}
-
 		}
 
 		public CompleteOperation(string input)
@@ -102,8 +100,6 @@ namespace ExpressionParser
 			{	
 				var results = AttributesWorker.Where<DescriptionAttribute>(typeof(Operation), item => item.Description == Value);
 				double temp;
-				CultureInfo culture = CultureInfo.InvariantCulture;
-				//culture.NumberFormat.
 				if (results.Count() > 0)
 				{
 					// WATCH: rewrite
